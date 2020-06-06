@@ -19,3 +19,7 @@ blackcheck = "black --check ./"
 
 [pipenv]
 allow_prereleases = true
+
+[packages]
+click = "*"
+boto3 = "*"
