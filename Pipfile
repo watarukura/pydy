@@ -8,6 +8,7 @@ black = "*"
 pytest = "*"
 pytest-cov = "*"
 mypy = "*"
+isort = "*"
 
 [requires]
 python_version = "3.8"
@@ -16,6 +17,8 @@ python_version = "3.8"
 test = "pytest --verbose -s --cov=src ./tests"
 black = "black ./"
 blackcheck = "black --check ./"
+mypy = "mypy --config mypy.ini"
+isrot = "isort . -rc"
 
 [pipenv]
 allow_prereleases = true
