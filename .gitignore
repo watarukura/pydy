@@ -1,0 +1,8 @@
+.venv/
+.DS_Store
+.idea/
+Pipfile.lock
+.pytest_cache/
+.coverage
+.mypy_cache/
+node_modules/

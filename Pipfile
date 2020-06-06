@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+black = "*"
+pytest = "*"
+pytest-cov = "*"
+mypy = "*"
+
+[requires]
+python_version = "3.8"
+
+[scripts]
+test = "pytest --verbose -s --cov=src ./tests"
+black = "black ./"
+blackcheck = "black --check ./"
+
+[pipenv]
+allow_prereleases = true
