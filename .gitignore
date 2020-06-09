@@ -5,3 +5,7 @@
 .coverage
 .mypy_cache/
 node_modules/
+__pycache__/
+.env
+.tox
+.coverage
