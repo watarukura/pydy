@@ -21,6 +21,8 @@ black = "black ./"
 blackcheck = "black --check ./"
 mypy = "mypy --config mypy.ini"
 isrot = "isort . -rc"
+get = "python -m src.pydy get"
+put = "python -m src.pydy put"
 
 [pipenv]
 allow_prereleases = true
