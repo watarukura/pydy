@@ -30,15 +30,16 @@ def put(pkey: str, skey: str) -> None:
 def list() -> None:
     try:
         response = client.list_tables()
-        if last_evaluated_table_name := response["LastEvaluatedTableName"]:
-            add_table_list = client.list_tables(
-                ExclusiveStartTableName=last_evaluated_table_name)
-            response["TableNames"].append(add_table_list["TableNames"])
+        table_names = response["TableNames"]
+        while "LastEvaluatedTableName" in response:
+            last_table = response["LastEvaluatedTableName"]
+            response = client.list_tables(ExclusiveStartTableName=last_table)
+            table_names += response["TableNames"]
     except Exception as e:
         click.echo(response["ResponseMetadata"])
         raise e
 
-    click.echo(response["TableNames"])
+    click.echo(table_names)
 
 
 cli.add_command(get)
