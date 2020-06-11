@@ -35,7 +35,7 @@ def list() -> None:
 
 
 @click.command()
-@click.option("--table", help="desc")
+@click.option("--table", required=True, type=str, help="table name")
 def desc(table: str) -> None:
     table_info = describe_table(table)
     click.echo(table_info)
