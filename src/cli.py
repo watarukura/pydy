@@ -1,7 +1,9 @@
-import boto3
+import json
+
 import click
 
-client = boto3.client("dynamodb")
+from src.desc import describe_table
+from src.list import list_tables
 
 
 @click.group()
@@ -14,9 +16,9 @@ def cli() -> None:
 @click.option("--pkey", help="get-item")
 @click.option("--skey", default=None, help="get-item")
 def get(table: str, pkey: str, skey: str) -> None:
-    response = client.get_item(TableName=table, Key={"S": pkey})
-    print(response)
-    # click.echo(f"get {pkey}, {skey}")
+    # response = client.get_item(TableName=table, Key={"S": pkey})
+    # print(response)
+    click.echo(f"get {pkey}, {skey}")
 
 
 @click.command()
@@ -28,20 +30,18 @@ def put(pkey: str, skey: str) -> None:
 
 @click.command()
 def list() -> None:
-    try:
-        response = client.list_tables()
-        table_names = response["TableNames"]
-        while "LastEvaluatedTableName" in response:
-            last_table = response["LastEvaluatedTableName"]
-            response = client.list_tables(ExclusiveStartTableName=last_table)
-            table_names += response["TableNames"]
-    except Exception as e:
-        click.echo(response["ResponseMetadata"])
-        raise e
+    table_names = list_tables()
+    click.echo(json.dumps(table_names))
 
-    click.echo(table_names)
+
+@click.command()
+@click.option("--table", help="desc")
+def desc(table: str) -> None:
+    table_info = describe_table(table)
+    click.echo(table_info)
 
 
 cli.add_command(get)
 cli.add_command(put)
 cli.add_command(list)
+cli.add_command(desc)

@@ -20,10 +20,11 @@ test = "pytest --verbose -s --cov=src ./tests"
 black = "black ./"
 blackcheck = "black --check ./"
 mypy = "mypy --config mypy.ini"
-isrot = "isort . -rc"
+isort = "isort . -rc"
 get = "python -m src.pydy get"
 put = "python -m src.pydy put"
 list = "python -m src.pydy list"
+desc = "python -m src.pydy desc"
 
 [pipenv]
 allow_prereleases = true
