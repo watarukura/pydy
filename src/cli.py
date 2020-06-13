@@ -11,30 +11,31 @@ def cli() -> None:
     pass
 
 
-@click.command()
-@click.option("--table", help="get-item")
-@click.option("--pkey", help="get-item")
-@click.option("--skey", default=None, help="get-item")
+@cli.command()
+@click.option("--table", required=True, type=str, help="table name")
+@click.option("--pkey", required=True, help="partition key")
+@click.option("--skey", default=None, help="sort key")
 def get(table: str, pkey: str, skey: str) -> None:
     # response = client.get_item(TableName=table, Key={"S": pkey})
     # print(response)
-    click.echo(f"get {pkey}, {skey}")
+    click.echo(f"get {pkey}, {skey} from {table}")
 
 
-@click.command()
-@click.option("--pkey", help="put-item")
-@click.option("--skey", default=None, help="put-item")
-def put(pkey: str, skey: str) -> None:
-    click.echo(f"put {pkey}, {skey}")
+@cli.command()
+@click.option("--table", required=True, type=str, help="table name")
+@click.option("--pkey", required=True, help="partition key")
+@click.option("--skey", default=None, help="sort key")
+def put(table: str, pkey: str, skey: str) -> None:
+    click.echo(f"put {pkey}, {skey} from {table}")
 
 
-@click.command()
+@cli.command()
 def list() -> None:
     table_names = list_tables()
     click.echo(json.dumps(table_names))
 
 
-@click.command()
+@cli.command()
 @click.option("--table", required=True, type=str, help="table name")
 def desc(table: str) -> None:
     table_info = describe_table(table)
