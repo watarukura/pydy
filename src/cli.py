@@ -7,7 +7,7 @@ from src.list import list_tables
 from src.put import put_item
 
 
-@click.group()
+@click.group(help="DynamoDB CLI")
 def cli() -> None:
     pass
 
