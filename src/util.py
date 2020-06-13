@@ -12,3 +12,14 @@ def get_client():
         aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
     )
     return client
+
+
+def get_resource():
+    dynamodb = boto3.resource(
+        "dynamodb",
+        region_name=os.environ["AWS_REGION"],
+        endpoint_url=os.environ["AWS_ENDPOINT_URL"],
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+    )
+    return dynamodb
