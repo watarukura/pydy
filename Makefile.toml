@@ -1,0 +1,38 @@
+[tasks.BUILD]
+description = "Build"
+script = ['''
+#!/usr/bin/env bash
+poetry install
+''']
+
+[tasks.LINT]
+description = "Lint"
+script = ['''
+#!/usr/bin/env bash
+poetry run black ./
+''']
+dependencies = ["BUILD"]
+
+[tasks.TYPE_CHECK]
+description = "Type Check"
+script = ['''
+#!/usr/bin/env bash
+poetry run mypy --config mypy.ini
+''']
+dependencies = ["BUILD"]
+
+[tasks.IMPORT_CHECK]
+description = "Import Check"
+script = ['''
+#!/usr/bin/env bash
+poetry run isort . -rc
+''']
+dependencies = ["BUILD"]
+
+[tasks.TEST]
+description = "Test"
+script = ['''
+#!/usr/bin/env bash
+poetry run pytest --verbose -s --cov=src ./tests
+''']
+dependencies = ["BUILD", "LINT"]
