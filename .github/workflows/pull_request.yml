@@ -2,12 +2,6 @@ name: Lint and Test
 
 on:
   pull_request:
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - Pipfile
-      - Dockerfile
-      - '.github/worflows/*'
 
 jobs:
   lint:
@@ -24,11 +18,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pipenv black
-          pipenv install --system --skip-lock
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          source $HOME/.poetry/env
+          poetry install --no-root
 
       - name: Lint check with black
-        run: pipenv run blackcheck
+        run: |
+          source $HOME/.poetry/env
+          poetry run black --check ./
 
       - name: Notify Result to Slack
         uses: homoluctus/slatify@master
@@ -43,35 +40,6 @@ jobs:
     name: Python Test
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@master
-
-      - name: Set up Python 3.8
-        uses: actions/setup-python@master
-        with:
-          python-version: '3.8'
-          architecture: 'x64'
-
-      - name: Install dependencies
-        run: |
-          pip install pipenv pytest
-          pipenv install --system --skip-lock
-
-      - name: Test with pytest
-        run: pipenv run test
-
-      - name: Notify Result to Slack
-        uses: homoluctus/slatify@master
-        if: always()
-        with:
-          type: ${{ job.status }}
-          job_name: ':pytest: *Test*'
-          channel: '#ci_my_projects'
-          url: ${{ secrets.SLACK_WEBHOOK }}
-
-  audit:
-    name: Python Audit
-    runs-on: ubuntu-18.04
-    steps:
       - uses: actions/checkout@v2
 
       - name: Set up Python 3.8
@@ -82,17 +50,20 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pipenv
-          pipenv install --system --skip-lock
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          source $HOME/.poetry/env
+          poetry install --no-root
 
-      - name: Vulnerability check
-        run: pipenv check
+      - name: Test with pytest
+        run: |
+          source $HOME/.poetry/env
+          poetry run pytest --verbose -s --cov=src ./tests
 
       - name: Notify Result to Slack
         uses: homoluctus/slatify@master
         if: always()
         with:
           type: ${{ job.status }}
-          job_name: ':pipenv: *Audit*'
+          job_name: ':pytest: *Test*'
           channel: '#ci_my_projects'
           url: ${{ secrets.SLACK_WEBHOOK }}
