@@ -1,4 +1,4 @@
-[tasks.build]
+[tasks.install]
 description = "Build"
 script = ['''
 #!/usr/bin/env bash
@@ -11,7 +11,7 @@ script = ['''
 #!/usr/bin/env bash
 poetry run black ./
 ''']
-dependencies = ["build"]
+dependencies = ["install"]
 
 [tasks.type_check]
 description = "Type Check"
@@ -19,7 +19,7 @@ script = ['''
 #!/usr/bin/env bash
 poetry run mypy --config mypy.ini
 ''']
-dependencies = ["build"]
+dependencies = ["install"]
 
 [tasks.import_check]
 description = "Import Check"
@@ -27,15 +27,15 @@ script = ['''
 #!/usr/bin/env bash
 poetry run isort . -rc
 ''']
-dependencies = ["build"]
+dependencies = ["install"]
 
-[tasks.test]
+[tasks.pytest]
 description = "Test"
 script = ['''
 #!/usr/bin/env bash
 poetry run pytest --verbose -s --cov=src ./tests
 ''']
-dependencies = ["build", "lint"]
+dependencies = ["install", "lint"]
 
 [tasks.docker]
 description = "Docker for Test"
