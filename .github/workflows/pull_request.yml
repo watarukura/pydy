@@ -2,12 +2,6 @@ name: Lint and Test
 
 on:
   pull_request:
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - Pipfile
-      - Dockerfile
-      - '.github/worflows/*'
 
 jobs:
   lint:
@@ -24,11 +18,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pipenv black
-          pipenv install --system --skip-lock
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          poetry install --no-root
 
       - name: Lint check with black
-        run: pipenv run blackcheck
+        run: poetry run black --check ./
 
       - name: Notify Result to Slack
         uses: homoluctus/slatify@master
@@ -43,21 +37,21 @@ jobs:
     name: Python Test
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
 
       - name: Set up Python 3.8
-        uses: actions/setup-python@master
+        uses: actions/setup-python@v2
         with:
           python-version: '3.8'
           architecture: 'x64'
 
       - name: Install dependencies
         run: |
-          pip install pipenv pytest
-          pipenv install --system --skip-lock
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          poetry install --no-root
 
       - name: Test with pytest
-        run: pipenv run test
+        run: poetry run pytest --verbose -s --cov=src ./tests
 
       - name: Notify Result to Slack
         uses: homoluctus/slatify@master
@@ -82,8 +76,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pipenv
-          pipenv install --system --skip-lock
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          poetry install --no-root
 
       - name: Vulnerability check
         run: pipenv check
