@@ -1,38 +1,78 @@
-[tasks.BUILD]
+[tasks.build]
 description = "Build"
 script = ['''
 #!/usr/bin/env bash
 poetry install
 ''']
 
-[tasks.LINT]
+[tasks.lint]
 description = "Lint"
 script = ['''
 #!/usr/bin/env bash
 poetry run black ./
 ''']
-dependencies = ["BUILD"]
+dependencies = ["build"]
 
-[tasks.TYPE_CHECK]
+[tasks.type_check]
 description = "Type Check"
 script = ['''
 #!/usr/bin/env bash
 poetry run mypy --config mypy.ini
 ''']
-dependencies = ["BUILD"]
+dependencies = ["build"]
 
-[tasks.IMPORT_CHECK]
+[tasks.import_check]
 description = "Import Check"
 script = ['''
 #!/usr/bin/env bash
 poetry run isort . -rc
 ''']
-dependencies = ["BUILD"]
+dependencies = ["build"]
 
-[tasks.TEST]
+[tasks.test]
 description = "Test"
 script = ['''
 #!/usr/bin/env bash
 poetry run pytest --verbose -s --cov=src ./tests
 ''']
-dependencies = ["BUILD", "LINT"]
+dependencies = ["build", "lint"]
+
+[tasks.docker]
+description = "Docker for Test"
+script = ['''
+#!/usr/bin/env bash
+docker-compose up -d
+''']
+
+[tasks.testddb]
+description = "DynamoDB-local"
+script = ['''
+#!/usr/bin/env bash
+./dynamodb_testdata.bash
+''']
+dependencies = ["docker"]
+
+[tasks.list]
+description = "List"
+command = "poetry"
+args = ["run", "python", "-m", "src.pydy", "list"]
+dependencies = ["testddb"]
+
+[tasks.desc]
+description = "Desc"
+command = "poetry"
+args = ["run", "python", "-m", "src.pydy", "desc"]
+dependencies = ["testddb"]
+
+[tasks.put]
+description = "Put"
+command = "poetry"
+args = ["run", "python", "-m", "src.pydy", "put"]
+dependencies = ["testddb"]
+
+[tasks.get]
+description = "Get"
+command = "poetry"
+args = ["run", "python", "-m", "src.pydy", "get"]
+dependencies = ["testddb"]
+
