@@ -50,10 +50,17 @@ def desc(table: str) -> None:
 @click.option("--table", required=True, type=str, help="table name")
 @click.option("--pkey", required=True, type=str, help="partition key")
 @click.option(
-    "--pkey_attr", required=True, type=str, help="partition key type (S|N|B)"
+    "--pkey_attr",
+    required=True,
+    type=click.Choice(["S", "N", "B"], case_sensitive=False),
+    help="partition key type (S|N|B)",
 )
 @click.option("--skey", type=str, help="sort key")
-@click.option("--skey_attr", type=str, help="sort key type (S|N|B)")
+@click.option(
+    "--skey_attr",
+    type=click.Choice(["S", "N", "B"], case_sensitive=False),
+    help="sort key type (S|N|B)",
+)
 @click.option("--gsi", type=str, help="gsi ddl JSON")
 def create(
     table: str, pkey: str, pkey_attr: str, skey: str, skey_attr: str, gsi=None
