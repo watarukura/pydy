@@ -18,7 +18,6 @@ def cli() -> None:
 @click.option("--pkey", required=True, help="partition key")
 @click.option("--skey", default=None, help="sort key")
 def get(table: str, pkey: str, skey: str) -> None:
-    # click.echo(f"get {pkey}, {skey} from {table}")
     result = get_item(table, pkey, skey)
     click.echo(result)
 
