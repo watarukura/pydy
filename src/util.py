@@ -26,9 +26,9 @@ def get_resource():
     return dynamodb
 
 
-def validate_ddl(
-    pkey: str, pkey_attr: str, skey=None, skey_attr=None, gsi=[]
-) -> Tuple[list, list]:
+def generate_ddl(
+    pkey: str, pkey_attr: str, skey=None, skey_attr=None, gsi_list=[]
+) -> Tuple[list, list, list]:
     # Partition Key
     key_schema = [{"AttributeName": pkey, "KeyType": "HASH"}]
     attr_def = [{"AttributeName": pkey, "AttributeType": pkey_attr}]
@@ -38,8 +38,9 @@ def validate_ddl(
         key_schema.append({"AttributeName": skey, "KeyType": "RANGE"})
         attr_def.append({"AttributeName": skey, "AttributeType": skey_attr})
 
-    if gsi:
-        for gsi_ddl in gsi:
+    gsi = []
+    if gsi_list:
+        for gsi_ddl in gsi_list:
             # Partition Key
             if not gsi_ddl.get("IndexName"):
                 raise AttributeError
@@ -52,13 +53,18 @@ def validate_ddl(
                 or gsi_ddl.get("KeySchema")[0].get("KeyType") != "HASH"
             ):
                 raise AttributeError
+            if not gsi_ddl.get("'Projection"):
+                gsi_ddl["Projection"] = {"ProjectionType": "ALL"}
 
             # Sort Key
-            if not gsi_ddl.get("KeySchema")[1].get("AttributeName"):
-                raise AttributeError
-            if (
-                not gsi_ddl[1].get("KeyType")
-                or gsi_ddl[1].get("KeyType") != "RANGE"
-            ):
-                raise AttributeError
-    return key_schema, attr_def
+            if gsi_ddl.get("KeySchema")[1]:
+                if not gsi_ddl.get("KeySchema")[1].get("AttributeName"):
+                    raise AttributeError
+                if (
+                    not gsi_ddl.get("KeySchema")[1].get("KeyType")
+                    or gsi_ddl.get("KeySchema")[1].get("KeyType") != "RANGE"
+                ):
+                    print(gsi_ddl)
+                    raise AttributeError
+            gsi.append(gsi_ddl)
+    return key_schema, attr_def, gsi

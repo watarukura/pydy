@@ -7,7 +7,7 @@ from src.desc import describe_table
 from src.get import get_item
 from src.list import list_tables
 from src.put import put_item
-from src.util import validate_ddl
+from src.util import generate_ddl
 
 
 @click.group(help="DynamoDB CLI")
@@ -61,19 +61,24 @@ def desc(table: str) -> None:
     type=click.Choice(["S", "N", "B"], case_sensitive=False),
     help="sort key type (S|N|B)",
 )
-@click.option("--gsi", type=str, help="gsi ddl JSON")
+@click.option("--gsi_json", type=str, help="gsi ddl JSON")
 def create(
-    table: str, pkey: str, pkey_attr: str, skey: str, skey_attr: str, gsi=None
+    table: str,
+    pkey: str,
+    pkey_attr: str,
+    skey: str,
+    skey_attr: str,
+    gsi_json=None,
 ) -> None:
-    if gsi:
-        gsi_list = json.loads(gsi)
+    if gsi_json:
+        gsi_list = json.loads(gsi_json)
     else:
         gsi_list = []
     try:
-        key_schema, attr_def = validate_ddl(
+        key_schema, attr_def, gsi = generate_ddl(
             pkey, pkey_attr, skey, skey_attr, gsi_list
         )
-        result = create_table(table, key_schema, attr_def, gsi_list)
+        result = create_table(table, key_schema, attr_def, gsi)
     except Exception as e:
         raise e
 
