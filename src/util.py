@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from typing import Tuple
 
 import boto3
@@ -68,3 +69,11 @@ def generate_ddl(
                     raise AttributeError
             gsi.append(gsi_ddl)
     return key_schema, attr_def, gsi
+
+
+def json_serial(obj):
+    # 日付型の場合には、文字列に変換します
+    if isinstance(obj, (datetime)):
+        return datetime.strftime(obj, '%Y-%m-%d %H:%M:%S')
+    # 上記以外はサポート対象外
+    raise TypeError("Type %s not serializable" % type(obj))

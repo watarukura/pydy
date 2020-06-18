@@ -7,7 +7,7 @@ from src.desc import describe_table
 from src.get import get_item
 from src.list import list_tables
 from src.put import put_item
-from src.util import generate_ddl
+from src.util import generate_ddl, json_serial
 
 
 @click.group(help="DynamoDB CLI")
@@ -21,7 +21,7 @@ def cli() -> None:
 @click.option("--skey", default=None, help="sort key")
 def get(table: str, pkey: str, skey: str) -> None:
     result = get_item(table, pkey, skey)
-    click.echo(result)
+    click.echo(json.dumps(result))
 
 
 @cli.command()
@@ -30,7 +30,7 @@ def get(table: str, pkey: str, skey: str) -> None:
 def put(table: str, payload: str) -> None:
     payload_dict = json.loads(payload)
     result = put_item(table, payload_dict)
-    click.echo(result)
+    click.echo(json.dumps(result))
 
 
 @cli.command()
@@ -43,7 +43,7 @@ def list() -> None:
 @click.option("--table", required=True, type=str, help="table name")
 def desc(table: str) -> None:
     table_info = describe_table(table)
-    click.echo(table_info)
+    click.echo(json.dumps(table_info, default=json_serial))
 
 
 @cli.command()
@@ -82,7 +82,7 @@ def create(
     except Exception as e:
         raise e
 
-    click.echo(result)
+    click.echo(json.dumps(result))
 
 
 cli.add_command(get)
