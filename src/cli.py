@@ -47,10 +47,10 @@ def desc(table: str) -> None:
 
 
 @cli.command()
-@click.option("--ddl_json", required=True, type=str, help="ddl JSON")
-def create(ddl_json: str) -> None:
+@click.option("--ddl", required=True, type=str, help="ddl JSON")
+def create(ddl: str) -> None:
     try:
-        ddl_dict = json.loads(ddl_json)
+        ddl_dict = json.loads(ddl)
         table_name, key_schema, attr_def, lsi, gsi = generate_ddl(ddl_dict)
         result = create_table(table_name, key_schema, attr_def, lsi, gsi)
     except Exception as e:
