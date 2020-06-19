@@ -68,10 +68,6 @@ pydy create --ddl_json <DdlJSon>
 
 ToDo
 
-### Delete
-
-ToDo
-
 ### Update
 
 ToDo
