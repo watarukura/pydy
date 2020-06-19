@@ -47,42 +47,16 @@ def desc(table: str) -> None:
 
 
 @cli.command()
-@click.option("--table", required=True, type=str, help="table name")
-@click.option("--pkey", required=True, type=str, help="partition key")
-@click.option(
-    "--pkey_attr",
-    required=True,
-    type=click.Choice(["S", "N", "B"], case_sensitive=False),
-    help="partition key type (S|N|B)",
-)
-@click.option("--skey", type=str, help="sort key")
-@click.option(
-    "--skey_attr",
-    type=click.Choice(["S", "N", "B"], case_sensitive=False),
-    help="sort key type (S|N|B)",
-)
-@click.option("--gsi_json", type=str, help="gsi ddl JSON")
-def create(
-    table: str,
-    pkey: str,
-    pkey_attr: str,
-    skey: str,
-    skey_attr: str,
-    gsi_json=None,
-) -> None:
-    if gsi_json:
-        gsi_list = json.loads(gsi_json)
-    else:
-        gsi_list = []
+@click.option("--ddl_json", required=True, type=str, help="ddl JSON")
+def create(ddl_json: str) -> None:
     try:
-        key_schema, attr_def, gsi = generate_ddl(
-            pkey, pkey_attr, skey, skey_attr, gsi_list
-        )
-        result = create_table(table, key_schema, attr_def, gsi)
+        ddl_dict = json.loads(ddl_json)
+        table_name, key_schema, attr_def, lsi, gsi = generate_ddl(ddl_dict)
+        result = create_table(table_name, key_schema, attr_def, lsi, gsi)
     except Exception as e:
         raise e
 
-    click.echo(json.dumps(result))
+    click.echo(result)
 
 
 cli.add_command(get)
