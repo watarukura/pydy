@@ -11,9 +11,9 @@ ToDo
 ### Get
 
 ```sh
-$ pydy get --table <TableName> \
-     --pkey <PartitionKey> \
-     --skey <SortKey>
+pydy get --table <TableName> \
+    --pkey <PartitionKey> \
+    --skey <SortKey>
 ```
 
 ### Query (PartitionKey, SortKey)
@@ -27,14 +27,14 @@ ToDo
 ### Put
 
 ```sh
-$ pydy put --table <TableName> \
-     --payload <Payload>
+pydy put --table <TableName> \
+    --payload <Payload>
 ```
 
 ```sh
-$ cat payload.json
+cat payload.json
 {"Id": 1}
-$ pydy put --table Sample --payload $(cat payload.json)
+pydy put --table Sample --payload $(cat payload.json)
 ```
 
 ### Delete
@@ -48,22 +48,30 @@ ToDo
 ### Desc
 
 ```sh
-$ pydy desc --table <TableName>
+pydy desc --table <TableName>
 ```
 
 ### List
 
 
 ```sh
-$ pydy list
+pydy list
 ```
 
 ### Create
 
 ```sh
-$ pydy create --ddl_json <DdlJSon>
+pydy create --ddl_json <DdlJSon>
 ```
 
 ### Drop
+
+ToDo
+
+### Delete
+
+ToDo
+
+### Update
 
 ToDo
