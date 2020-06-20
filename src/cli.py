@@ -3,6 +3,7 @@ import json
 import click
 
 from src.create import create_table
+from src.delete import delete_item
 from src.desc import describe_table
 from src.get import get_item
 from src.list import list_tables
@@ -30,6 +31,15 @@ def get(table: str, pkey: str, skey: str) -> None:
 def put(table: str, payload: str) -> None:
     payload_dict = json.loads(payload)
     result = put_item(table, payload_dict)
+    click.echo(json.dumps(result))
+
+
+@cli.command()
+@click.option("--table", required=True, type=str, help="table name")
+@click.option("--pkey", required=True, help="partition key")
+@click.option("--skey", default=None, help="sort key")
+def delete(table: str, pkey: str, skey: str) -> None:
+    result = delete_item(table, pkey, skey)
     click.echo(json.dumps(result))
 
 
@@ -64,3 +74,4 @@ cli.add_command(put)
 cli.add_command(list)
 cli.add_command(desc)
 cli.add_command(create)
+cli.add_command(delete)
