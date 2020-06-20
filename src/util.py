@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from typing import Tuple
 
 import boto3
@@ -15,7 +16,7 @@ def get_client():
     return client
 
 
-def get_resource():
+def get_resource() -> boto3.resources.base.ServiceResource:
     dynamodb = boto3.resource(
         "dynamodb",
         region_name=os.environ["AWS_REGION"],
@@ -26,39 +27,36 @@ def get_resource():
     return dynamodb
 
 
-def validate_ddl(
-    pkey: str, pkey_attr: str, skey=None, skey_attr=None, gsi=[]
-) -> Tuple[list, list]:
-    # Partition Key
-    key_schema = [{"AttributeName": pkey, "KeyType": "HASH"}]
-    attr_def = [{"AttributeName": pkey, "AttributeType": pkey_attr}]
+def generate_ddl(ddl: dict) -> Tuple[str, list, list, list, list]:
+    table_name = ddl["Table"]["TableName"]
+    key_schema = ddl["Table"]["KeySchema"]
+    attr_def = ddl["Table"]["AttributeDefinitions"]
+    lsi = []
+    if lsi_ddls := ddl["Table"].get("LocalSecondaryIndexes"):
+        for lsi_ddl in lsi_ddls:
+            lsi.append(
+                {
+                    "IndexName": lsi_ddl["IndexName"],
+                    "KeySchema": lsi_ddl["KeySchema"],
+                    "Projection": lsi_ddl["Projection"],
+                }
+            )
+    gsi = []
+    if gsi_ddls := ddl["Table"].get("GlobalSecondaryIndexes"):
+        for gsi_ddl in gsi_ddls:
+            gsi.append(
+                {
+                    "IndexName": gsi_ddl["IndexName"],
+                    "KeySchema": gsi_ddl["KeySchema"],
+                    "Projection": gsi_ddl["Projection"],
+                }
+            )
+    return table_name, key_schema, attr_def, lsi, gsi
 
-    # Sort Key
-    if skey:
-        key_schema.append({"AttributeName": skey, "KeyType": "RANGE"})
-        attr_def.append({"AttributeName": skey, "AttributeType": skey_attr})
 
-    if gsi:
-        for gsi_ddl in gsi:
-            # Partition Key
-            if not gsi_ddl.get("IndexName"):
-                raise AttributeError
-            if not gsi_ddl.get("KeySchema"):
-                raise AttributeError
-            if not gsi_ddl.get("KeySchema")[0].get("AttributeName"):
-                raise AttributeError
-            if (
-                not gsi_ddl.get("KeySchema")[0].get("KeyType")
-                or gsi_ddl.get("KeySchema")[0].get("KeyType") != "HASH"
-            ):
-                raise AttributeError
-
-            # Sort Key
-            if not gsi_ddl.get("KeySchema")[1].get("AttributeName"):
-                raise AttributeError
-            if (
-                not gsi_ddl[1].get("KeyType")
-                or gsi_ddl[1].get("KeyType") != "RANGE"
-            ):
-                raise AttributeError
-    return key_schema, attr_def
+def json_serial(obj):
+    # 日付型の場合には、文字列に変換します
+    if isinstance(obj, (datetime)):
+        return datetime.strftime(obj, "%Y-%m-%d %H:%M:%S")
+    # 上記以外はサポート対象外
+    raise TypeError("Type %s not serializable" % type(obj))

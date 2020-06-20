@@ -4,25 +4,53 @@ on:
   pull_request:
 
 jobs:
-  build:
-    # Name the Job
+  lint_python:
     name: Lint Code Base
-    # Set the agent to run on
     runs-on: ubuntu-latest
 
-    ##################
-    # Load all steps #
-    ##################
     steps:
-      ##########################
-      # Checkout the code base #
-      ##########################
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      ################################
-      # Run Linter against code base #
-      ################################
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+          architecture: 'x64'
+
+      - name: Install dependencies
+        run: |
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+          source $HOME/.poetry/env
+          poetry install --no-root
+
+      - name: Lint with black
+        run: |
+          source $HOME/.poetry/env
+          poetry run black --check ./
+
+      - name: Type Check with mypy
+        run: |
+          source $HOME/.poetry/env
+          poetry run mypy --config mypy.ini
+
+      - name: Notify Result to Slack
+        uses: homoluctus/slatify@master
+        if: always()
+        with:
+          type: ${{ job.status }}
+          job_name: ':python: *Lint check*'
+          channel: '#ci_my_projects'
+          url: ${{ secrets.SLACK_WEBHOOK }}
+
+  lint_all:
+    name: Lint Code Base
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
       - name: Lint Code Base
         uses: github/super-linter@v2.0.0
         env:
@@ -33,7 +61,7 @@ jobs:
           VALIDATE_MD: true
           VALIDATE_BASH: true
           VALIDATE_PERL: false
-          VALIDATE_PYTHON: true
+          VALIDATE_PYTHON: false
           VALIDATE_RUBY: false
           VALIDATE_COFFEE: false
           VALIDATE_ANSIBLE: false
