@@ -57,10 +57,19 @@ def desc(table: str) -> None:
 
 
 @cli.command()
-@click.option("--ddl", required=True, type=str, help="ddl JSON")
-def create(ddl: str) -> None:
-    try:
+@click.option("--ddl", type=str, help="ddl JSON")
+@click.option(
+    "--ddl_file", type=click.Path(exists=True), help="ddl JSON filepath"
+)
+def create(ddl: str, ddl_file: str) -> None:
+    if ddl_file:
+        with open(ddl_file, "r") as f:
+            ddl_dict = json.load(f)
+    elif ddl:
         ddl_dict = json.loads(ddl)
+    else:
+        raise AttributeError
+    try:
         table_name, key_schema, attr_def, lsi, gsi = generate_ddl(ddl_dict)
         result = create_table(table_name, key_schema, attr_def, lsi, gsi)
     except Exception as e:
