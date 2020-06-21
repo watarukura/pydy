@@ -109,6 +109,11 @@ jobs:
           cors: '*'
 
       - name: Test with pytest
+        env:
+          AWS_ACCESS_KEY_ID: DUMMY
+          AWS_SECRET_ACCESS_KEY: DUMMY
+          AWS_REGION: ap-northeast-1
+          AWS_ENDPOINT_URL: http://localhost:18000
         run: |
           source $HOME/.poetry/env
           poetry run pytest --verbose -s --cov=src ./tests
