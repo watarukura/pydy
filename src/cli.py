@@ -22,7 +22,7 @@ def cli() -> None:
 @click.option("--skey", default=None, help="sort key")
 def get(table: str, pkey: str, skey: str) -> None:
     result = get_item(table, pkey, skey)
-    click.echo(json.dumps(result))
+    click.echo(json.dumps(result, default=json_serial))
 
 
 @cli.command()

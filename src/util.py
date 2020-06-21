@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
-from typing import Tuple
+from decimal import Decimal
+from typing import Dict, List, Tuple
 
 import boto3
 
@@ -58,5 +59,14 @@ def json_serial(obj):
     # 日付型の場合には、文字列に変換します
     if isinstance(obj, (datetime)):
         return datetime.strftime(obj, "%Y-%m-%d %H:%M:%S")
+    if isinstance(obj, (Decimal)):
+        return int(obj)
     # 上記以外はサポート対象外
     raise TypeError("Type %s not serializable" % type(obj))
+
+
+def get_key_names(key_schema: List[Dict]) -> Tuple[str, None]:
+    if len(key_schema) == 1:
+        return key_schema[0]["AttributeName"], None
+    else:
+        return key_schema[0]["AttributeName"], key_schema[1]["AttributeName"]
