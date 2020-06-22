@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
-from typing import Tuple
+from decimal import Decimal
+from typing import Dict, List, Tuple, Union
 
 import boto3
 
@@ -58,5 +59,36 @@ def json_serial(obj):
     # 日付型の場合には、文字列に変換します
     if isinstance(obj, (datetime)):
         return datetime.strftime(obj, "%Y-%m-%d %H:%M:%S")
+    if isinstance(obj, (Decimal)):
+        return int(obj)
     # 上記以外はサポート対象外
     raise TypeError("Type %s not serializable" % type(obj))
+
+
+def get_key_names(key_schema: List[Dict]) -> Tuple[str, None]:
+    if len(key_schema) == 1:
+        return key_schema[0]["AttributeName"], None
+    else:
+        return key_schema[0]["AttributeName"], key_schema[1]["AttributeName"]
+
+
+def generate_key_clause(
+    attribute_definitions: List[Dict],
+    pkey: str,
+    pkey_name: str,
+    skey: str,
+    skey_name=None,
+) -> Dict[str, Union[str, int]]:
+    key_clause: Dict[str, Union[str, int]] = {}
+    for attr_def in attribute_definitions:
+        if attr_def["AttributeName"] == pkey_name:
+            if attr_def["AttributeType"] == "N":
+                key_clause = {pkey_name: int(pkey)}
+            else:
+                key_clause = {pkey_name: pkey}
+        if skey_name and attr_def["AttributeName"] == skey_name:
+            if attr_def["AttributeType"] == "N":
+                key_clause[skey_name] = int(skey)
+            else:
+                key_clause[skey_name] = skey
+    return key_clause

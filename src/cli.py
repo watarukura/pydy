@@ -3,6 +3,7 @@ import json
 import click
 
 from src.create import create_table
+from src.delete import delete_item
 from src.desc import describe_table
 from src.get import get_item
 from src.list import list_tables
@@ -21,7 +22,7 @@ def cli() -> None:
 @click.option("--skey", default=None, help="sort key")
 def get(table: str, pkey: str, skey: str) -> None:
     result = get_item(table, pkey, skey)
-    click.echo(json.dumps(result))
+    click.echo(json.dumps(result, default=json_serial))
 
 
 @cli.command()
@@ -30,6 +31,15 @@ def get(table: str, pkey: str, skey: str) -> None:
 def put(table: str, payload: str) -> None:
     payload_dict = json.loads(payload)
     result = put_item(table, payload_dict)
+    click.echo(json.dumps(result))
+
+
+@cli.command()
+@click.option("--table", required=True, type=str, help="table name")
+@click.option("--pkey", required=True, help="partition key")
+@click.option("--skey", default=None, help="sort key")
+def delete(table: str, pkey: str, skey: str) -> None:
+    result = delete_item(table, pkey, skey)
     click.echo(json.dumps(result))
 
 
@@ -47,10 +57,19 @@ def desc(table: str) -> None:
 
 
 @cli.command()
-@click.option("--ddl", required=True, type=str, help="ddl JSON")
-def create(ddl: str) -> None:
-    try:
+@click.option("--ddl", type=str, help="ddl JSON")
+@click.option(
+    "--ddl_file", type=click.Path(exists=True), help="ddl JSON filepath"
+)
+def create(ddl: str, ddl_file: str) -> None:
+    if ddl_file:
+        with open(ddl_file, "r") as f:
+            ddl_dict = json.load(f)
+    elif ddl:
         ddl_dict = json.loads(ddl)
+    else:
+        raise AttributeError
+    try:
         table_name, key_schema, attr_def, lsi, gsi = generate_ddl(ddl_dict)
         result = create_table(table_name, key_schema, attr_def, lsi, gsi)
     except Exception as e:
@@ -64,3 +83,4 @@ cli.add_command(put)
 cli.add_command(list)
 cli.add_command(desc)
 cli.add_command(create)
+cli.add_command(delete)
