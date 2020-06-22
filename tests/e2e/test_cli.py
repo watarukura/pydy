@@ -1,7 +1,7 @@
 import pytest
 from click.testing import CliRunner
 
-from src.cli import create, get, list, put
+from src.cli import create, delete, get, list, put
 
 
 runner = CliRunner()
@@ -30,10 +30,29 @@ def test_list() -> None:
 
 
 @pytest.mark.parametrize(
-    "table, payload, pkey, expect",
-    (("ProductCatalog", '{"Id": 1}', 1, '{"Id": 1}\n',),),
+    "table, payload, pkey, skey, expect",
+    (
+        ("ProductCatalog", '{"Id": 1}', 1, None, '{"Id": 1}\n',),
+        (
+            "Reply",
+            '{"Id": "1", "ReplyDateTime": "20200622184100"}',
+            "1",
+            "20200622184100",
+            '{"Id": "1", "ReplyDateTime": "20200622184100"}\n',
+        ),
+    ),
 )
-def test_put_get(table: str, payload: str, pkey: str, expect: str) -> None:
+def test_put_get_delete(
+    table: str, payload: str, pkey: str, skey: str, expect: str
+) -> None:
     runner.invoke(put, args=["--table", table, "--payload", payload])
-    result = runner.invoke(get, args=["--table", table, "--pkey", pkey])
+    args = ["--table", table, "--pkey", pkey]
+    if skey:
+        args.append("--skey")
+        args.append(skey)
+    result = runner.invoke(get, args=args)
     assert result.output == expect
+
+    runner.invoke(delete, args=args)
+    delete_result = runner.invoke(get, args=args)
+    assert delete_result.output == ""
