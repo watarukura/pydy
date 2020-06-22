@@ -8,6 +8,7 @@ from src.desc import describe_table
 from src.get import get_item
 from src.list import list_tables
 from src.put import put_item
+from src.scan import scan_table
 from src.util import generate_ddl, json_serial
 
 
@@ -78,9 +79,18 @@ def create(ddl: str, ddl_file: str) -> None:
     click.echo(result)
 
 
+@cli.command()
+@click.option("--table", required=True, type=str, help="table name")
+def scan(table: str) -> None:
+    result = scan_table(table)
+    click.echo(json.dumps(result, default=json_serial))
+
+
+
 cli.add_command(get)
 cli.add_command(put)
 cli.add_command(list)
 cli.add_command(desc)
 cli.add_command(create)
 cli.add_command(delete)
+cli.add_command(scan)
