@@ -86,7 +86,6 @@ def scan(table: str) -> None:
     click.echo(json.dumps(result, default=json_serial))
 
 
-
 cli.add_command(get)
 cli.add_command(put)
 cli.add_command(list)
