@@ -81,8 +81,9 @@ def create(ddl: str, ddl_file: str) -> None:
 
 @cli.command()
 @click.option("--table", required=True, type=str, help="table name")
-def scan(table: str) -> None:
-    result = scan_table(table)
+@click.option("--limit", default=100, type=int, help="output count limit")
+def scan(table: str, limit: int) -> None:
+    result = scan_table(table, limit)
     click.echo(json.dumps(result, default=json_serial))
 
 
