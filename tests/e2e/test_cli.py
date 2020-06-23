@@ -73,3 +73,25 @@ def test_scan(table: str, payload: str, expect: str) -> None:
     runner.invoke(put, args=["--table", table, "--payload", payload])
     result = runner.invoke(scan, args=["--table", table])
     assert result.output == expect
+
+
+@pytest.mark.parametrize(
+    "table, payload1, payload2, limit, expect1, expect2",
+    (
+        (
+            "ProductCatalog",
+            '{"Id": 1}',
+            '{"Id": 2}',
+            1,
+            '[{"Id": 1}]\n',
+            '[{"Id": 2}]\n',
+        ),
+    ),
+)
+def test_scan_limit(
+    table: str, payload1: str, payload2: str, limit: str, expect1, expect2
+) -> None:
+    runner.invoke(put, args=["--table", table, "--payload", payload1])
+    runner.invoke(put, args=["--table", table, "--payload", payload2])
+    result = runner.invoke(scan, args=["--table", table, "--limit", limit])
+    assert result.output == expect1 or result.output == expect2

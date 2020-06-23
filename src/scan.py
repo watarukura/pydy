@@ -7,11 +7,15 @@ def scan_table(table_name: str, limit: int) -> dict:
     try:
         response = dynamodb_table.scan(Limit=limit)
         response_items = response["Items"]
-        while response.get("LastEvaluatedKey"):
-            response = dynamodb.scan(
+        count = response.get("Count")
+        while count < limit and response.get("LastEvaluatedKey"):
+            print(count)
+            response = dynamodb_table.scan(
                 TableName=table_name,
-                ExclusiveStartKey=response.LastEvaluatedKey,
+                ExclusiveStartKey=response.get("LastEvaluatedKey"),
+                Limit=(limit - count),
             )
+            count += response.get("Count")
             response_items.append(response["Items"])
 
     except Exception as e:
