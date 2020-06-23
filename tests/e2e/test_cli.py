@@ -1,7 +1,7 @@
 import pytest
 from click.testing import CliRunner
 
-from src.cli import create, delete, get, list, put
+from src.cli import create, delete, get, list, put, scan
 
 
 runner = CliRunner()
@@ -56,3 +56,20 @@ def test_put_get_delete(
     runner.invoke(delete, args=args)
     delete_result = runner.invoke(get, args=args)
     assert delete_result.output == ""
+
+
+@pytest.mark.parametrize(
+    "table, payload, expect",
+    (
+        ("ProductCatalog", '{"Id": 1}', '[{"Id": 1}]\n',),
+        (
+            "Reply",
+            '{"Id": "1", "ReplyDateTime": "20200622184100"}',
+            '[{"Id": "1", "ReplyDateTime": "20200622184100"}]\n',
+        ),
+    ),
+)
+def test_scan(table: str, payload: str, expect: str) -> None:
+    runner.invoke(put, args=["--table", table, "--payload", payload])
+    result = runner.invoke(scan, args=["--table", table])
+    assert result.output == expect

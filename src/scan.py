@@ -3,10 +3,11 @@ from src.util import get_resource
 
 def scan_table(table_name: str) -> dict:
     dynamodb = get_resource()
+    dynamodb_table = dynamodb.Table(table_name)
     try:
-        response = dynamodb.scan(TableName=table_name)
+        response = dynamodb_table.scan()
         response_items = response["Items"]
-        while response.LastEvaluatedKey:
+        while response.get("LastEvaluatedKey"):
             response = dynamodb.scan(
                 TableName=table_name,
                 ExclusiveStartKey=response.LastEvaluatedKey,
