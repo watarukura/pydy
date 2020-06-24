@@ -1,11 +1,13 @@
 from src.util import get_resource
 
 
-def scan_table(table_name: str, limit: int) -> dict:
+def scan_table(table_name: str, limit: int, filter_expression: dict) -> dict:
     dynamodb = get_resource()
     dynamodb_table = dynamodb.Table(table_name)
     try:
-        response = dynamodb_table.scan(Limit=limit)
+        response = dynamodb_table.scan(
+            Limit=limit, FIlterExpression=filter_expression
+        )
         response_items = response["Items"]
         count = response.get("Count")
         while count < limit and response.get("LastEvaluatedKey"):
@@ -14,6 +16,7 @@ def scan_table(table_name: str, limit: int) -> dict:
                 TableName=table_name,
                 ExclusiveStartKey=response.get("LastEvaluatedKey"),
                 Limit=(limit - count),
+                FIlterExpression=filter_expression,
             )
             count += response.get("Count")
             response_items.append(response["Items"])

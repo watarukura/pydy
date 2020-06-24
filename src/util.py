@@ -92,3 +92,12 @@ def generate_key_clause(
             else:
                 key_clause[skey_name] = skey
     return key_clause
+
+
+def generate_filter_expression(
+    filter_key: str, filter_cond: str, filter_value: str
+) -> dict:
+    filter_expression = {
+        "FilterExpression": f"Key({filter}).{filter_cond}({filter_value})"
+    }
+    return filter_expression
