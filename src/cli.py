@@ -5,6 +5,7 @@ import click
 from src.create import create_table
 from src.delete import delete_item
 from src.desc import describe_table
+from src.drop import drop_table
 from src.get import get_item
 from src.list import list_tables
 from src.put import put_item
@@ -106,6 +107,13 @@ def scan(
         filter_expression = {}
     result = scan_table(table, limit, filter_expression)
     click.echo(json.dumps(result, default=json_serial))
+
+
+@cli.command()
+@click.option("--table", required=True, type=str, help="table name")
+def drop(table: str) -> None:
+    table_info = drop_table(table)
+    click.echo(json.dumps(table_info, default=json_serial))
 
 
 cli.add_command(get)

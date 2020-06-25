@@ -1,7 +1,7 @@
 import pytest
 from click.testing import CliRunner
 
-from src.cli import create, delete, get, list, put, scan
+from src.cli import create, delete, drop, get, list, put, scan
 
 
 runner = CliRunner()
@@ -136,3 +136,9 @@ def test_scan_filter(
         ],
     )
     assert result.output == expect
+
+
+def test_drop() -> None:
+    runner.invoke(drop, args=["--table", "Forum"])
+    result = runner.invoke(list)
+    assert result.output == '["ProductCatalog", "Reply", "Thread"]\n'
