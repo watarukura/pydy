@@ -33,7 +33,6 @@ script = ['''
 sleep 10
 poetry run pytest --verbose -s --cov=src ./tests
 ''']
-dependencies = ["lint", "type_check"]
 
 [tasks.docker_up]
 description = "Docker for Test"
@@ -51,6 +50,9 @@ docker-compose down
 
 [tasks.tests]
 dependencies = [
+    "lint",
+    "type_check",
+    "import_check",
     "docker_up",
     "pytest",
     "docker_down"

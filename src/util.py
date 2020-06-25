@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Dict, List, Tuple, Union
 
 import boto3
-from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import Attr, Key
 
 
 def get_client():
@@ -119,3 +119,35 @@ def generate_filter_expression(
         return {"FilterExpression": filter_attr.contains(filter_value)}
     else:
         raise AttributeError("filter condition missing")
+
+
+def generate_key_conditions(
+    table: str, where_key: str, where_cond: str, where_value: Union[str, int]
+) -> dict:
+    key = Key(where_key)
+    client = get_client()
+    ddl = client.describe_table(TableName=table)
+    for attr_def in ddl["Table"]["AttributeDefinitions"]:
+        if attr_def["AttributeName"] == where_key:
+            if attr_def["AttributeType"] == "N":
+                where_value = int(where_value)
+    if where_cond == "eq":
+        return {"KeyConditionExpression": key.eq(where_value)}
+    elif where_cond == "ne":
+        return {"KeyConditionExpression": key.eq(where_value)}
+    elif where_cond == "gt":
+        return {"KeyConditionExpression": key.gt(where_value)}
+    elif where_cond == "ge":
+        return {"KeyConditionExpression": key.gte(where_value)}
+    elif where_cond == "lt":
+        return {"KeyConditionExpression": key.lt(where_value)}
+    elif where_cond == "le":
+        return {"KeyConditionExpression": key.lte(where_value)}
+    elif where_cond == "begins_with":
+        return {"KeyConditionExpression": key.begins_with(where_value)}
+    elif where_cond == "between":
+        return {"KeyConditionExpression": key.between(*[where_value])}
+    elif where_cond == "contains":
+        return {"KeyConditionExpression": key.contains(where_value)}
+    else:
+        raise AttributeError("key condition missing")

@@ -9,8 +9,12 @@ from src.drop import drop_table
 from src.get import get_item
 from src.list import list_tables
 from src.put import put_item
+from src.query import query_item
 from src.scan import scan_table
-from src.util import generate_ddl, generate_filter_expression, json_serial
+from src.util import (
+    generate_ddl, generate_filter_expression, generate_key_conditions,
+    json_serial
+)
 
 
 @click.group(help="DynamoDB CLI")
@@ -116,6 +120,55 @@ def drop(table: str) -> None:
     click.echo(json.dumps(table_info, default=json_serial))
 
 
+@cli.command()
+@click.option("--table", required=True, type=str, help="table name")
+@click.option("--limit", default=100, type=int, help="output count limit")
+@click.option("--where_key", type=str, help="where key name")
+@click.option(
+    "--where_cond",
+    type=click.Choice(
+        ["eq", "ge", "gt", "lt", "le", "begins_with", "between", "contains"]
+    ),
+    help="where key condition",
+)
+@click.option("--where_value", type=str, help="where value")
+@click.option("--filter_key", type=str, help="filtering key name")
+@click.option(
+    "--filter_cond",
+    type=click.Choice(
+        ["eq", "ge", "gt", "lt", "le", "begins_with", "between", "contains"]
+    ),
+    help="filtering key name",
+)
+@click.option("--filter_value", type=str, help="filtering key name")
+@click.option("--index", type=str, default=None, help="index name")
+def query(
+    table: str,
+    limit: int,
+    where_key: str,
+    where_cond: str,
+    where_value: str,
+    filter_key: str,
+    filter_cond: str,
+    filter_value: str,
+    index: str,
+) -> None:
+    if filter_key and filter_cond and filter_value:
+        filter_expression = generate_filter_expression(
+            filter_key, filter_cond, filter_value
+        )
+    else:
+        filter_expression = {}
+    if where_key and where_cond and where_value:
+        key_conditions = generate_key_conditions(
+            table, where_key, where_cond, where_value
+        )
+    else:
+        key_conditions = {}
+    result = query_item(table, key_conditions, limit, filter_expression, index)
+    click.echo(json.dumps(result, default=json_serial))
+
+
 cli.add_command(get)
 cli.add_command(put)
 cli.add_command(list)
@@ -123,3 +176,4 @@ cli.add_command(desc)
 cli.add_command(create)
 cli.add_command(delete)
 cli.add_command(scan)
+cli.add_command(query)
