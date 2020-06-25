@@ -85,7 +85,9 @@ def create(ddl: str, ddl_file: str) -> None:
 @click.option("--filter_key", type=str, help="filtering key name")
 @click.option(
     "--filter_cond",
-    type=click.Choice(["eq", "ge", "gt", "lt", "le", "begin_with", "between"]),
+    type=click.Choice(
+        ["eq", "ge", "gt", "lt", "le", "begins_with", "between", "contains"]
+    ),
     help="filtering key name",
 )
 @click.option("--filter_value", type=str, help="filtering key name")
@@ -96,9 +98,12 @@ def scan(
     filter_cond: str,
     filter_value: str,
 ) -> None:
-    filter_expression = generate_filter_expression(
-        filter_key, filter_cond, filter_value
-    )
+    if filter_key and filter_cond and filter_value:
+        filter_expression = generate_filter_expression(
+            filter_key, filter_cond, filter_value
+        )
+    else:
+        filter_expression = {}
     result = scan_table(table, limit, filter_expression)
     click.echo(json.dumps(result, default=json_serial))
 
