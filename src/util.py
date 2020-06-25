@@ -4,6 +4,7 @@ from decimal import Decimal
 from typing import Dict, List, Tuple, Union
 
 import boto3
+from boto3.dynamodb.conditions import Attr
 
 
 def get_client():
@@ -92,3 +93,29 @@ def generate_key_clause(
             else:
                 key_clause[skey_name] = skey
     return key_clause
+
+
+def generate_filter_expression(
+    filter_key: str, filter_cond: str, filter_value: str
+) -> dict:
+    filter_attr = Attr(filter_key)
+    if filter_cond == "eq":
+        return {"FilterExpression": filter_attr.eq(filter_value)}
+    elif filter_cond == "ne":
+        return {"FilterExpression": filter_attr.eq(filter_value)}
+    elif filter_cond == "gt":
+        return {"FilterExpression": filter_attr.gt(filter_value)}
+    elif filter_cond == "ge":
+        return {"FilterExpression": filter_attr.gte(filter_value)}
+    elif filter_cond == "lt":
+        return {"FilterExpression": filter_attr.lt(filter_value)}
+    elif filter_cond == "le":
+        return {"FilterExpression": filter_attr.lte(filter_value)}
+    elif filter_cond == "begins_with":
+        return {"FilterExpression": filter_attr.begins_with(filter_value)}
+    elif filter_cond == "between":
+        return {"FilterExpression": filter_attr.between(*[filter_value])}
+    elif filter_cond == "contains":
+        return {"FilterExpression": filter_attr.contains(filter_value)}
+    else:
+        raise AttributeError("filter condition missing")

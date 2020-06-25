@@ -8,7 +8,8 @@ from src.desc import describe_table
 from src.get import get_item
 from src.list import list_tables
 from src.put import put_item
-from src.util import generate_ddl, json_serial
+from src.scan import scan_table
+from src.util import generate_ddl, generate_filter_expression, json_serial
 
 
 @click.group(help="DynamoDB CLI")
@@ -78,9 +79,39 @@ def create(ddl: str, ddl_file: str) -> None:
     click.echo(result)
 
 
+@cli.command()
+@click.option("--table", required=True, type=str, help="table name")
+@click.option("--limit", default=100, type=int, help="output count limit")
+@click.option("--filter_key", type=str, help="filtering key name")
+@click.option(
+    "--filter_cond",
+    type=click.Choice(
+        ["eq", "ge", "gt", "lt", "le", "begins_with", "between", "contains"]
+    ),
+    help="filtering key name",
+)
+@click.option("--filter_value", type=str, help="filtering key name")
+def scan(
+    table: str,
+    limit: int,
+    filter_key: str,
+    filter_cond: str,
+    filter_value: str,
+) -> None:
+    if filter_key and filter_cond and filter_value:
+        filter_expression = generate_filter_expression(
+            filter_key, filter_cond, filter_value
+        )
+    else:
+        filter_expression = {}
+    result = scan_table(table, limit, filter_expression)
+    click.echo(json.dumps(result, default=json_serial))
+
+
 cli.add_command(get)
 cli.add_command(put)
 cli.add_command(list)
 cli.add_command(desc)
 cli.add_command(create)
 cli.add_command(delete)
+cli.add_command(scan)
