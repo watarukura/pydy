@@ -122,32 +122,80 @@ def generate_filter_expression(
 
 
 def generate_key_conditions(
-    table: str, where_key: str, where_cond: str, where_value: Union[str, int]
+    table: str,
+    pkey: Union[str, int],
+    skey: Union[str, int],
+    skey_cond: str,
+    index: str,
 ) -> dict:
-    key = Key(where_key)
     client = get_client()
     ddl = client.describe_table(TableName=table)
-    for attr_def in ddl["Table"]["AttributeDefinitions"]:
-        if attr_def["AttributeName"] == where_key:
-            if attr_def["AttributeType"] == "N":
-                where_value = int(where_value)
-    if where_cond == "eq":
-        return {"KeyConditionExpression": key.eq(where_value)}
-    elif where_cond == "ne":
-        return {"KeyConditionExpression": key.eq(where_value)}
-    elif where_cond == "gt":
-        return {"KeyConditionExpression": key.gt(where_value)}
-    elif where_cond == "ge":
-        return {"KeyConditionExpression": key.gte(where_value)}
-    elif where_cond == "lt":
-        return {"KeyConditionExpression": key.lt(where_value)}
-    elif where_cond == "le":
-        return {"KeyConditionExpression": key.lte(where_value)}
-    elif where_cond == "begins_with":
-        return {"KeyConditionExpression": key.begins_with(where_value)}
-    elif where_cond == "between":
-        return {"KeyConditionExpression": key.between(*[where_value])}
-    elif where_cond == "contains":
-        return {"KeyConditionExpression": key.contains(where_value)}
+    if index:
+        if lsi := ddl["Table"].get("LocalSecondaryIndexes"):
+            if index == lsi.get("IndexName"):
+                pkey_name, skey_name = get_key_names(lsi["KeySchema"])
+        if gsi := ddl["Table"].get("GlobalSecondaryIndexes"):
+            if index == gsi.get("IndexName"):
+                pkey_name, skey_name = get_key_names(gsi["KeySchema"])
     else:
-        raise AttributeError("key condition missing")
+        pkey_name, skey_name = get_key_names(ddl["Table"]["KeySchema"])
+
+    for attr_def in ddl["Table"]["AttributeDefinitions"]:
+        if attr_def["AttributeName"] == pkey_name:
+            if attr_def["AttributeType"] == "N":
+                pkey = int(pkey)
+        if attr_def["AttributeName"] == skey_name:
+            if attr_def["AttributeType"] == "N":
+                skey = int(skey)
+    key_condtion_pkey = Key(pkey_name).eq(pkey)
+    if skey is None:
+        return {"KeyConditionExpression": key_condtion_pkey}
+    else:
+        key_condtion_skey = Key(skey_name)
+        if skey_cond == "eq":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.eq(skey)
+            }
+        elif skey_cond == "ne":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.ne(skey)
+            }
+        elif skey_cond == "gt":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.gt(skey)
+            }
+        elif skey_cond == "ge":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.gte(skey)
+            }
+        elif skey_cond == "lt":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.lt(skey)
+            }
+        elif skey_cond == "le":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.lte(skey)
+            }
+        elif skey_cond == "begins_with":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.begins_with(skey)
+            }
+        elif skey_cond == "between":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.between(*[skey])
+            }
+        elif skey_cond == "contains":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.contains(skey)
+            }
+        else:
+            raise AttributeError("key condition missing")

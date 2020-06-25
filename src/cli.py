@@ -12,8 +12,10 @@ from src.put import put_item
 from src.query import query_item
 from src.scan import scan_table
 from src.util import (
-    generate_ddl, generate_filter_expression, generate_key_conditions,
-    json_serial
+    generate_ddl,
+    generate_filter_expression,
+    generate_key_conditions,
+    json_serial,
 )
 
 
@@ -123,15 +125,15 @@ def drop(table: str) -> None:
 @cli.command()
 @click.option("--table", required=True, type=str, help="table name")
 @click.option("--limit", default=100, type=int, help="output count limit")
-@click.option("--where_key", type=str, help="where key name")
+@click.option("--pkey", type=str, help="partition key value")
+@click.option("--skey", type=str, help="sort key value")
 @click.option(
-    "--where_cond",
+    "--skey_cond",
     type=click.Choice(
         ["eq", "ge", "gt", "lt", "le", "begins_with", "between", "contains"]
     ),
     help="where key condition",
 )
-@click.option("--where_value", type=str, help="where value")
 @click.option("--filter_key", type=str, help="filtering key name")
 @click.option(
     "--filter_cond",
@@ -145,9 +147,9 @@ def drop(table: str) -> None:
 def query(
     table: str,
     limit: int,
-    where_key: str,
-    where_cond: str,
-    where_value: str,
+    pkey: str,
+    skey: str,
+    skey_cond: str,
     filter_key: str,
     filter_cond: str,
     filter_value: str,
@@ -159,13 +161,10 @@ def query(
         )
     else:
         filter_expression = {}
-    if where_key and where_cond and where_value:
-        key_conditions = generate_key_conditions(
-            table, where_key, where_cond, where_value
-        )
-    else:
-        key_conditions = {}
-    result = query_item(table, key_conditions, limit, filter_expression, index)
+    key_conditions = generate_key_conditions(
+        table, pkey, skey, skey_cond, index
+    )
+    result = query_item(table, key_conditions, limit, filter_expression)
     click.echo(json.dumps(result, default=json_serial))
 
 
