@@ -12,8 +12,10 @@ from src.put import put_item
 from src.query import query_item
 from src.scan import scan_table
 from src.util import (
-    generate_ddl, generate_filter_expression, generate_key_conditions,
-    json_serial
+    generate_ddl,
+    generate_filter_expression,
+    generate_key_conditions,
+    json_serial,
 )
 
 
