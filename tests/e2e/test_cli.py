@@ -145,56 +145,28 @@ def test_drop() -> None:
 
 
 @pytest.mark.parametrize(
-    "table, payload1, payload2, where_key, where_cond, where_value, expect",
-    (
-        (
-            "ProductCatalog",
-            '{"Id": 1}',
-            '{"Id": 2}',
-            "Id",
-            "eq",
-            2,
-            '[{"Id": 2}]\n',
-        ),
-    ),
+    "table, payload1, payload2, pkey, expect",
+    (("ProductCatalog", '{"Id": 1}', '{"Id": 2}', "2", '[{"Id": 2}]\n',),),
 )
 def test_query(
-    table: str,
-    payload1: str,
-    payload2: str,
-    where_key: str,
-    where_cond: str,
-    where_value: str,
-    expect: str,
+    table: str, payload1: str, payload2: str, pkey: str, expect: str,
 ) -> None:
     runner.invoke(put, args=["--table", table, "--payload", payload1])
     runner.invoke(put, args=["--table", table, "--payload", payload2])
-    result = runner.invoke(
-        query,
-        args=[
-            "--table",
-            table,
-            "--where_key",
-            where_key,
-            "--where_cond",
-            where_cond,
-            "--where_value",
-            where_value,
-        ],
-    )
+    result = runner.invoke(query, args=["--table", table, "--pkey", pkey,],)
     assert result.output == expect
 
 
 @pytest.mark.parametrize(
-    "table, payload1, payload2, key, cond, value, index, expect",
+    "table, payload1, payload2, pkey, skey, skey_cond, index, expect",
     (
         (
             "Reply",
             '{"Id": "1", "ReplyDateTime": "20200625", "PostedBy": "a"}',
             '{"Id": "2", "ReplyDateTime": "20200624", "PostedBy": "b"}',
-            "Id",
-            "eq",
             "1",
+            "a",
+            "eq",
             "PostedBy-index",
             '[{"ReplyDateTime": "20200625", "PostedBy": "a", "Id": "1"}]\n',
         ),
@@ -204,9 +176,9 @@ def test_query_index(
     table: str,
     payload1: str,
     payload2: str,
-    key: str,
-    cond: str,
-    value: str,
+    pkey: str,
+    skey: str,
+    skey_cond: str,
     index: str,
     expect: str,
 ) -> None:
@@ -217,12 +189,12 @@ def test_query_index(
         args=[
             "--table",
             table,
-            "--where_key",
-            key,
-            "--where_cond",
-            cond,
-            "--where_value",
-            value,
+            "--pkey",
+            pkey,
+            "--skey",
+            skey,
+            "--skey_cond",
+            skey_cond,
             "--index",
             index,
         ],

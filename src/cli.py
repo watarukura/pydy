@@ -12,10 +12,8 @@ from src.put import put_item
 from src.query import query_item
 from src.scan import scan_table
 from src.util import (
-    generate_ddl,
-    generate_filter_expression,
-    generate_key_conditions,
-    json_serial,
+    generate_ddl, generate_filter_expression, generate_key_conditions,
+    json_serial
 )
 
 
@@ -164,7 +162,7 @@ def query(
     key_conditions = generate_key_conditions(
         table, pkey, skey, skey_cond, index
     )
-    result = query_item(table, key_conditions, limit, filter_expression)
+    result = query_item(table, key_conditions, limit, filter_expression, index)
     click.echo(json.dumps(result, default=json_serial))
 
 

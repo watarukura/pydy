@@ -1,3 +1,5 @@
+import pprint
+
 from src.util import get_resource
 
 
@@ -25,7 +27,6 @@ def query_item(
         response_items = response["Items"]
         count = response.get("Count")
         while count < limit and response.get("LastEvaluatedKey"):
-            print(count)
             response = dynamodb_table.scan(
                 TableName=table_name,
                 ExclusiveStartKey=response.get("LastEvaluatedKey"),

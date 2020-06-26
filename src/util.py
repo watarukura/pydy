@@ -132,11 +132,17 @@ def generate_key_conditions(
     ddl = client.describe_table(TableName=table)
     if index:
         if lsi := ddl["Table"].get("LocalSecondaryIndexes"):
-            if index == lsi.get("IndexName"):
-                pkey_name, skey_name = get_key_names(lsi["KeySchema"])
+            for lsi_index in lsi:
+                if index in lsi_index["IndexName"]:
+                    pkey_name, skey_name = get_key_names(
+                        lsi_index["KeySchema"]
+                    )
         if gsi := ddl["Table"].get("GlobalSecondaryIndexes"):
-            if index == gsi.get("IndexName"):
-                pkey_name, skey_name = get_key_names(gsi["KeySchema"])
+            for gsi_index in gsi:
+                if index == gsi.get("IndexName"):
+                    pkey_name, skey_name = get_key_names(
+                        gsi_index["KeySchema"]
+                    )
     else:
         pkey_name, skey_name = get_key_names(ddl["Table"]["KeySchema"])
 
@@ -148,6 +154,7 @@ def generate_key_conditions(
             if attr_def["AttributeType"] == "N":
                 skey = int(skey)
     key_condtion_pkey = Key(pkey_name).eq(pkey)
+
     if skey is None:
         return {"KeyConditionExpression": key_condtion_pkey}
     else:
