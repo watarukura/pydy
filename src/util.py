@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Dict, List, Tuple, Union
 
 import boto3
-from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import Attr, Key
 
 
 def get_client():
@@ -119,3 +119,90 @@ def generate_filter_expression(
         return {"FilterExpression": filter_attr.contains(filter_value)}
     else:
         raise AttributeError("filter condition missing")
+
+
+def generate_key_conditions(
+    table: str,
+    pkey: Union[str, int],
+    skey: Union[str, int],
+    skey_cond: str,
+    index: str,
+) -> dict:
+    client = get_client()
+    ddl = client.describe_table(TableName=table)
+    if index:
+        if lsi := ddl["Table"].get("LocalSecondaryIndexes"):
+            for lsi_index in lsi:
+                if index in lsi_index["IndexName"]:
+                    pkey_name, skey_name = get_key_names(
+                        lsi_index["KeySchema"]
+                    )
+        if gsi := ddl["Table"].get("GlobalSecondaryIndexes"):
+            for gsi_index in gsi:
+                if index == gsi.get("IndexName"):
+                    pkey_name, skey_name = get_key_names(
+                        gsi_index["KeySchema"]
+                    )
+    else:
+        pkey_name, skey_name = get_key_names(ddl["Table"]["KeySchema"])
+
+    for attr_def in ddl["Table"]["AttributeDefinitions"]:
+        if attr_def["AttributeName"] == pkey_name:
+            if attr_def["AttributeType"] == "N":
+                pkey = int(pkey)
+        if attr_def["AttributeName"] == skey_name:
+            if attr_def["AttributeType"] == "N":
+                skey = int(skey)
+    key_condtion_pkey = Key(pkey_name).eq(pkey)
+
+    if skey is None:
+        return {"KeyConditionExpression": key_condtion_pkey}
+    else:
+        key_condtion_skey = Key(skey_name)
+        if skey_cond == "eq":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.eq(skey)
+            }
+        elif skey_cond == "ne":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.ne(skey)
+            }
+        elif skey_cond == "gt":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.gt(skey)
+            }
+        elif skey_cond == "ge":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.gte(skey)
+            }
+        elif skey_cond == "lt":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.lt(skey)
+            }
+        elif skey_cond == "le":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.lte(skey)
+            }
+        elif skey_cond == "begins_with":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.begins_with(skey)
+            }
+        elif skey_cond == "between":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.between(*[skey])
+            }
+        elif skey_cond == "contains":
+            return {
+                "KeyConditionExpression": key_condtion_pkey
+                & key_condtion_skey.contains(skey)
+            }
+        else:
+            raise AttributeError("key condition missing")

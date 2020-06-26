@@ -1,7 +1,7 @@
 import pytest
 from click.testing import CliRunner
 
-from src.cli import create, delete, drop, get, list, put, scan
+from src.cli import create, delete, drop, get, list, put, query, scan
 
 
 runner = CliRunner()
@@ -142,3 +142,61 @@ def test_drop() -> None:
     runner.invoke(drop, args=["--table", "Forum"])
     result = runner.invoke(list)
     assert result.output == '["ProductCatalog", "Reply", "Thread"]\n'
+
+
+@pytest.mark.parametrize(
+    "table, payload1, payload2, pkey, expect",
+    (("ProductCatalog", '{"Id": 1}', '{"Id": 2}', "2", '[{"Id": 2}]\n',),),
+)
+def test_query(
+    table: str, payload1: str, payload2: str, pkey: str, expect: str,
+) -> None:
+    runner.invoke(put, args=["--table", table, "--payload", payload1])
+    runner.invoke(put, args=["--table", table, "--payload", payload2])
+    result = runner.invoke(query, args=["--table", table, "--pkey", pkey,],)
+    assert result.output == expect
+
+
+@pytest.mark.parametrize(
+    "table, payload1, payload2, pkey, skey, skey_cond, index, expect",
+    (
+        (
+            "Reply",
+            '{"Id": "1", "ReplyDateTime": "20200625", "PostedBy": "a"}',
+            '{"Id": "2", "ReplyDateTime": "20200624", "PostedBy": "b"}',
+            "1",
+            "a",
+            "eq",
+            "PostedBy-index",
+            '[{"ReplyDateTime": "20200625", "PostedBy": "a", "Id": "1"}]\n',
+        ),
+    ),
+)
+def test_query_index(
+    table: str,
+    payload1: str,
+    payload2: str,
+    pkey: str,
+    skey: str,
+    skey_cond: str,
+    index: str,
+    expect: str,
+) -> None:
+    runner.invoke(put, args=["--table", table, "--payload", payload1])
+    runner.invoke(put, args=["--table", table, "--payload", payload2])
+    result = runner.invoke(
+        query,
+        args=[
+            "--table",
+            table,
+            "--pkey",
+            pkey,
+            "--skey",
+            skey,
+            "--skey_cond",
+            skey_cond,
+            "--index",
+            index,
+        ],
+    )
+    assert result.output == expect
