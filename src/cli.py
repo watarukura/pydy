@@ -11,11 +11,10 @@ from src.list import list_tables
 from src.put import put_item
 from src.query import query_item
 from src.scan import scan_table
+from src.update import update_item
 from src.util import (
-    generate_ddl,
-    generate_filter_expression,
-    generate_key_conditions,
-    json_serial,
+    generate_ddl, generate_filter_expression, generate_key_clause,
+    generate_key_conditions, generate_update_expression, json_serial
 )
 
 
@@ -29,7 +28,8 @@ def cli() -> None:
 @click.option("--pkey", required=True, help="partition key")
 @click.option("--skey", default=None, help="sort key")
 def get(table: str, pkey: str, skey: str) -> None:
-    result = get_item(table, pkey, skey)
+    key_clause = generate_key_clause(table, pkey, skey)
+    result = get_item(table, key_clause)
     click.echo(json.dumps(result, default=json_serial))
 
 
@@ -168,6 +168,23 @@ def query(
     click.echo(json.dumps(result, default=json_serial))
 
 
+@cli.command()
+@click.option("--table", required=True, type=str, help="table name")
+@click.option("--pkey", type=str, help="partition key value")
+@click.option("--skey", type=str, help="sort key value")
+@click.option("--update_attr", type=str, help="update attribute")
+@click.option("--update_value", type=str, help="update value")
+def update(
+    table: str, pkey: str, skey: str, update_attr: str, update_value
+) -> None:
+    update_expression = generate_update_expression(
+        table, pkey, skey, update_attr, update_value
+    )
+    print(update_expression)
+    result = update_item(table, update_expression)
+    click.echo(json.dumps(result, default=json_serial))
+
+
 cli.add_command(get)
 cli.add_command(put)
 cli.add_command(list)
@@ -176,3 +193,4 @@ cli.add_command(create)
 cli.add_command(delete)
 cli.add_command(scan)
 cli.add_command(query)
+cli.add_command(update)

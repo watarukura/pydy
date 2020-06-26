@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from decimal import Decimal
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import boto3
 from boto3.dynamodb.conditions import Attr, Key
@@ -66,7 +66,7 @@ def json_serial(obj):
     raise TypeError("Type %s not serializable" % type(obj))
 
 
-def get_key_names(key_schema: List[Dict]) -> Tuple[str, None]:
+def get_key_names(key_schema: List[Dict]) -> Tuple[str, Union[str, None]]:
     if len(key_schema) == 1:
         return key_schema[0]["AttributeName"], None
     else:
@@ -74,24 +74,19 @@ def get_key_names(key_schema: List[Dict]) -> Tuple[str, None]:
 
 
 def generate_key_clause(
-    attribute_definitions: List[Dict],
-    pkey: str,
-    pkey_name: str,
-    skey: str,
-    skey_name=None,
-) -> Dict[str, Union[str, int]]:
-    key_clause: Dict[str, Union[str, int]] = {}
-    for attr_def in attribute_definitions:
-        if attr_def["AttributeName"] == pkey_name:
-            if attr_def["AttributeType"] == "N":
-                key_clause = {pkey_name: int(pkey)}
-            else:
-                key_clause = {pkey_name: pkey}
-        if skey_name and attr_def["AttributeName"] == skey_name:
-            if attr_def["AttributeType"] == "N":
-                key_clause[skey_name] = int(skey)
-            else:
-                key_clause[skey_name] = skey
+    table: str, pkey: Union[str, int], skey: Union[str, int, None],
+) -> Dict[Optional[str], Union[str, int]]:
+    client = get_client()
+    ddl = client.describe_table(TableName=table)
+    pkey_name, skey_name = get_key_names(ddl["Table"]["KeySchema"])
+    pkey, skey = cast_key_attr(
+        ddl["Table"]["AttributeDefinitions"], pkey, pkey_name, skey, skey_name
+    )
+
+    if skey:
+        key_clause = {pkey_name: pkey, skey_name: skey}
+    else:
+        key_clause = {pkey_name: pkey}
     return key_clause
 
 
@@ -124,7 +119,7 @@ def generate_filter_expression(
 def generate_key_conditions(
     table: str,
     pkey: Union[str, int],
-    skey: Union[str, int],
+    skey: Union[str, int, None],
     skey_cond: str,
     index: str,
 ) -> dict:
@@ -146,13 +141,10 @@ def generate_key_conditions(
     else:
         pkey_name, skey_name = get_key_names(ddl["Table"]["KeySchema"])
 
-    for attr_def in ddl["Table"]["AttributeDefinitions"]:
-        if attr_def["AttributeName"] == pkey_name:
-            if attr_def["AttributeType"] == "N":
-                pkey = int(pkey)
-        if attr_def["AttributeName"] == skey_name:
-            if attr_def["AttributeType"] == "N":
-                skey = int(skey)
+    pkey, skey = cast_key_attr(
+        ddl["Table"]["AttributeDefinitions"], pkey, pkey_name, skey, skey_name
+    )
+
     key_condtion_pkey = Key(pkey_name).eq(pkey)
 
     if skey is None:
@@ -206,3 +198,54 @@ def generate_key_conditions(
             }
         else:
             raise AttributeError("key condition missing")
+
+
+def generate_update_expression(
+    table: str,
+    pkey: Union[str, int],
+    skey: Union[str, int, None],
+    update_attr: str,
+    update_value: str,
+) -> dict:
+    update_set = f"set {update_attr}=:val"
+    expression_attr_val = {
+        ":val": update_value,
+    }
+
+    client = get_client()
+    ddl = client.describe_table(TableName=table)
+    pkey_name, skey_name = get_key_names(ddl["Table"]["KeySchema"])
+
+    pkey, skey = cast_key_attr(
+        ddl["Table"]["AttributeDefinitions"], pkey, pkey_name, skey, skey_name
+    )
+    if skey:
+        return {
+            "Key": {pkey_name: pkey, skey_name: skey},
+            "UpdateExpression": update_set,
+            "ExpressionAttributeValues": expression_attr_val,
+        }
+    else:
+        return {
+            "Key": {pkey_name: pkey},
+            "UpdateExpression": update_set,
+            "ExpressionAttributeValues": expression_attr_val,
+        }
+
+
+def cast_key_attr(
+    attribute_definitions: list,
+    pkey: Union[str, int],
+    pkey_name: str,
+    skey=None,
+    skey_name=None,
+) -> Tuple[Union[str, int], Union[str, int, None]]:
+    for attr_def in attribute_definitions:
+        if attr_def["AttributeName"] == pkey_name:
+            if attr_def["AttributeType"] == "N":
+                pkey = int(pkey)
+        if skey and attr_def["AttributeName"] == skey_name:
+            if attr_def["AttributeType"] == "N":
+                skey = int(skey)
+
+    return pkey, skey

@@ -1,7 +1,7 @@
 import pytest
 from click.testing import CliRunner
 
-from src.cli import create, delete, drop, get, list, put, query, scan
+from src.cli import create, delete, drop, get, list, put, query, scan, update
 
 
 runner = CliRunner()
@@ -198,5 +198,53 @@ def test_query_index(
             "--index",
             index,
         ],
+    )
+    assert result.output == expect
+
+
+@pytest.mark.parametrize(
+    "table, payload1, payload2, pkey, skey, update_attr, update_value, expect",
+    (
+        (
+            "Reply",
+            '{"Id": "1", "ReplyDateTime": "20200625", "PostedBy": "a"}',
+            '{"Id": "2", "ReplyDateTime": "20200624", "PostedBy": "b"}',
+            "1",
+            "20200625",
+            "PostedBy",
+            "c",
+            '{"ReplyDateTime": "20200625", "PostedBy": "c", "Id": "1"}\n',
+        ),
+    ),
+)
+def test_update_item(
+    table: str,
+    payload1: str,
+    payload2: str,
+    pkey: str,
+    skey: str,
+    update_attr: str,
+    update_value: str,
+    expect: str,
+) -> None:
+    runner.invoke(put, args=["--table", table, "--payload", payload1])
+    runner.invoke(put, args=["--table", table, "--payload", payload2])
+    runner.invoke(
+        update,
+        args=[
+            "--table",
+            table,
+            "--pkey",
+            pkey,
+            "--skey",
+            skey,
+            "--update_attr",
+            update_attr,
+            "--update_value",
+            update_value,
+        ],
+    )
+    result = runner.invoke(
+        get, args=["--table", table, "--pkey", pkey, "--skey", skey]
     )
     assert result.output == expect
