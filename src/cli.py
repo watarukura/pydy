@@ -13,8 +13,12 @@ from src.query import query_item
 from src.scan import scan_table
 from src.update import update_item
 from src.util import (
-    generate_ddl, generate_filter_expression, generate_key_clause,
-    generate_key_conditions, generate_update_expression, json_serial
+    generate_ddl,
+    generate_filter_expression,
+    generate_key_clause,
+    generate_key_conditions,
+    generate_update_expression,
+    json_serial,
 )
 
 
@@ -180,7 +184,6 @@ def update(
     update_expression = generate_update_expression(
         table, pkey, skey, update_attr, update_value
     )
-    print(update_expression)
     result = update_item(table, update_expression)
     click.echo(json.dumps(result, default=json_serial))
 

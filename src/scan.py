@@ -11,7 +11,6 @@ def scan_table(table_name: str, limit: int, filter_expression: dict,) -> dict:
         response_items = response["Items"]
         count = response.get("Count")
         while count < limit and response.get("LastEvaluatedKey"):
-            print(count)
             response = dynamodb_table.scan(
                 TableName=table_name,
                 ExclusiveStartKey=response.get("LastEvaluatedKey"),
