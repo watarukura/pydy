@@ -18,11 +18,22 @@ pydy get --table <TableName> \
 
 ### Query (PartitionKey, SortKey)
 
-ToDo
+```sh
+pydy query --table <TableName> \
+    --pkey <PartitionKey> \
+    --skey <SortKey> \
+    --skey_cond <Condition(eq|ne|gt|ge|lt|le|begins_with|between|contains)>
+```
 
 ### Query (Global Secondary Index)
 
-ToDo
+```sh
+pydy query --table <TableName> \
+    --pkey <PartitionKey> \
+    --skey <SortKey> \
+    --skey_cond <Condition(eq|ne|gt|ge|lt|le|begins_with|between|contains)>
+    --index <(Global|Local)SecondaryIndex>
+```
 
 ### Put
 
@@ -39,11 +50,21 @@ pydy put --table Sample --payload $(cat payload.json)
 
 ### Delete
 
-ToDo
+```sh
+pydy delete --table <TableName> \
+    --pkey <PartitionKey> \
+    --skey <SortKey>
+```
 
 ### Scan
 
-ToDo
+```sh
+pydy scan --table <TableName>
+    --filter_key <AttributeName>
+    --filter_cond <FilteringCondition(eq|ne|gt|ge|lt|le|begins_with|between|contains)> \
+    --filter_value <FilteringValue>
+    --limit <Limit>
+```
 
 ### Desc
 
@@ -66,8 +87,16 @@ pydy create --ddl_json <DdlJSon>
 
 ### Drop
 
-ToDo
+```
+pydy drop --table <TableName>
+```
 
 ### Update
 
-ToDo
+```
+pydy update --table <TableName> \
+    --pkey <PartitionKey> \
+    --skey <SortKey> \
+    --update_attr <UpdateAttribute> \
+    --update_value <UpdateValue>
+```

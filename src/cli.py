@@ -99,9 +99,9 @@ def create(ddl: str, ddl_file: str) -> None:
     type=click.Choice(
         ["eq", "ge", "gt", "lt", "le", "begins_with", "between", "contains"]
     ),
-    help="filtering key name",
+    help="filtering key condition",
 )
-@click.option("--filter_value", type=str, help="filtering key name")
+@click.option("--filter_value", type=str, help="filtering value")
 def scan(
     table: str,
     limit: int,

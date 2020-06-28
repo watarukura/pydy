@@ -7,7 +7,7 @@ import boto3
 from boto3.dynamodb.conditions import Attr, Key
 
 
-def get_client():
+def get_client() -> boto3.client:
     client = boto3.client(
         "dynamodb",
         region_name=os.environ["AWS_REGION"],
