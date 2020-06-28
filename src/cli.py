@@ -133,12 +133,7 @@ def drop(table: str) -> None:
 )
 @click.option("--index", type=str, default=None, help="index name")
 def query(
-    table: str,
-    limit: int,
-    pkey: str,
-    skey: str,
-    skey_cond: str,
-    index: str,
+    table: str, limit: int, pkey: str, skey: str, skey_cond: str, index: str,
 ) -> None:
     key_conditions = generate_key_conditions(
         table, pkey, skey, skey_cond, index
