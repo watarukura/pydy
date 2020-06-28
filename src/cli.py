@@ -2,24 +2,17 @@ import json
 
 import click
 
-from src.create import create_table
+from src.create import create_table, generate_ddl
 from src.delete import delete_item
 from src.desc import describe_table
 from src.drop import drop_table
-from src.get import get_item
+from src.get import generate_key_clause, get_item
 from src.list import list_tables
 from src.put import put_item
-from src.query import query_item
-from src.scan import scan_table
-from src.update import update_item
-from src.util import (
-    generate_ddl,
-    generate_filter_expression,
-    generate_key_clause,
-    generate_key_conditions,
-    generate_update_expression,
-    json_serial,
-)
+from src.query import generate_key_conditions, query_item
+from src.scan import generate_filter_expression, scan_table
+from src.update import generate_update_expression, update_item
+from src.util import json_serial
 
 
 @click.group(help="DynamoDB CLI")
@@ -136,17 +129,8 @@ def drop(table: str) -> None:
     type=click.Choice(
         ["eq", "ge", "gt", "lt", "le", "begins_with", "between", "contains"]
     ),
-    help="where key condition",
+    help="sort key condition",
 )
-@click.option("--filter_key", type=str, help="filtering key name")
-@click.option(
-    "--filter_cond",
-    type=click.Choice(
-        ["eq", "ge", "gt", "lt", "le", "begins_with", "between", "contains"]
-    ),
-    help="filtering key name",
-)
-@click.option("--filter_value", type=str, help="filtering key name")
 @click.option("--index", type=str, default=None, help="index name")
 def query(
     table: str,
@@ -154,21 +138,12 @@ def query(
     pkey: str,
     skey: str,
     skey_cond: str,
-    filter_key: str,
-    filter_cond: str,
-    filter_value: str,
     index: str,
 ) -> None:
-    if filter_key and filter_cond and filter_value:
-        filter_expression = generate_filter_expression(
-            filter_key, filter_cond, filter_value
-        )
-    else:
-        filter_expression = {}
     key_conditions = generate_key_conditions(
         table, pkey, skey, skey_cond, index
     )
-    result = query_item(table, key_conditions, limit, filter_expression, index)
+    result = query_item(table, key_conditions, limit, index)
     click.echo(json.dumps(result, default=json_serial))
 
 
