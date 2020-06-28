@@ -87,13 +87,13 @@ pydy create --ddl_json <DdlJSon>
 
 ### Drop
 
-```
+```sh
 pydy drop --table <TableName>
 ```
 
 ### Update
 
-```
+```sh
 pydy update --table <TableName> \
     --pkey <PartitionKey> \
     --skey <SortKey> \

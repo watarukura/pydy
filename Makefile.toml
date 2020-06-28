@@ -57,3 +57,23 @@ dependencies = [
     "pytest",
     "docker_down"
 ]
+
+[tasks.superlint]
+description = "Lint Others"
+script = ['''
+#!/usr/bin/env bash
+docker run -it superlinter
+''']
+
+[tasks.build_superlint]
+description = "Lint Others Build"
+script = ['''
+#!/usr/bin/env bash
+docker build -t superlinter --no-cache .
+''']
+
+[tasks.lints]
+dependencies = [
+    "build_superlint",
+    "superlint"
+]
