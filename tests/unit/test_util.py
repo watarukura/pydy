@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from src.util import generate_key_clause, get_key_names
+from src.util import get_key_names
 
 
 @pytest.mark.parametrize(
