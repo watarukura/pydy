@@ -69,7 +69,7 @@ jobs:
           VALIDATE_JAVASCRIPT_STANDARD: false
           VALIDATE_TYPESCRIPT_ES: false
           VALIDATE_TYPESCRIPT_STANDARD: false
-          VALIDATE_DOCKER: true
+          VALIDATE_DOCKER: false
           VALIDATE_GO: false
           VALIDATE_TERRAFORM: false
           ANSIBLE_DIRECTORY: /ansible
