@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from src.util import get_resource
 
 
@@ -26,3 +28,30 @@ def create_table(
         raise e
 
     return response
+
+
+def generate_ddl(ddl: dict) -> Tuple[str, list, list, list, list]:
+    table_name = ddl["Table"]["TableName"]
+    key_schema = ddl["Table"]["KeySchema"]
+    attr_def = ddl["Table"]["AttributeDefinitions"]
+    lsi = []
+    if lsi_ddls := ddl["Table"].get("LocalSecondaryIndexes"):
+        for lsi_ddl in lsi_ddls:
+            lsi.append(
+                {
+                    "IndexName": lsi_ddl["IndexName"],
+                    "KeySchema": lsi_ddl["KeySchema"],
+                    "Projection": lsi_ddl["Projection"],
+                }
+            )
+    gsi = []
+    if gsi_ddls := ddl["Table"].get("GlobalSecondaryIndexes"):
+        for gsi_ddl in gsi_ddls:
+            gsi.append(
+                {
+                    "IndexName": gsi_ddl["IndexName"],
+                    "KeySchema": gsi_ddl["KeySchema"],
+                    "Projection": gsi_ddl["Projection"],
+                }
+            )
+    return table_name, key_schema, attr_def, lsi, gsi

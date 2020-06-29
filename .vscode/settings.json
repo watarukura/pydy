@@ -2,12 +2,12 @@
   "[python]": {
     "editor.tabSize": 4,
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": false,
-    "editor.formatOnType": false,
-    "editor.insertSpaces": true,
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
     },
+    "editor.formatOnPaste": false,
+    "editor.formatOnType": false,
+    "editor.insertSpaces": true
   },
   "python.pythonPath": "${workspaceFolder}/.venv/bin/python",
   "python.envFile": "${workspaceFolder}/.env",
@@ -31,5 +31,5 @@
     "--show-capture=all",
     "tests"
   ],
-  "autoDocstring.docstringFormat": "google",
+  "autoDocstring.docstringFormat": "google"
 }
